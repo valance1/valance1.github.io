@@ -152,10 +152,10 @@ h3 {
 
 /* Media Content Styling */
 #project-media {
-  
   display: flex;
   flex-direction: column;
   align-items: center;
+  width: 100%;
 }
 
 #project-media img {
