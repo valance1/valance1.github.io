@@ -1,17 +1,9 @@
-https://example1.png
-Descriptions go under each image like this! png/jpeg/jpg/gif supported.
-
-https://example2.jpg
-Description for example2.jpg.
-
-https://example3.gif
-These aren't real images but need replacing with your own.
-
-https://examplevideo.mp4
-MP4's are also supported but like with images should be hosted somewhere like dropbox.
-
-https://beforepic.png // https://afterpic.png
-You can create before and after slider by seperating two urls with ' // ' 
-
-https://sketchfabexample.com 
-you can also embed sketchfab files by pasting the url, no need for direct embedd urls. 
+# One item per line. The first video is the big player at the top; the rest go below it.
+# A line right after an item that is not a link becomes its caption.
+# YouTube:        https://www.youtube.com/watch?v=VIDEO_ID   (youtu.be/ and shorts/ links work too)
+# Image:          render.png   (files in this folder) or a full https:// link
+# Before/after:   before.png // after.png
+# Video file:     clip.mp4
+# Sketchfab:      https://sketchfab.com/3d-models/name-MODEL_ID
+# Home banner:    end an image line with *  (used as the big picture at the top of the home page)
+https://www.youtube.com/watch?v=VIDEO_ID

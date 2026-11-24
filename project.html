@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Project | Gabriel Pinotti</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;800&family=IBM+Plex+Mono:wght@400;500;700&display=swap" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+  <link rel="stylesheet" href="CSS/site.css" />
+  <link rel="icon" href="Resources/favicon/pilfav.png" type="image/png" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap">
+      <a class="brand" href="index.html">gabriel_pinotti<span>_</span></a>
+      <nav class="site-nav" aria-label="Main">
+        <a href="index.html" aria-current="page">Work</a>
+        <a href="about.html">About</a>
+      </nav>
+      <div class="socials" data-socials></div>
+    </div>
+  </header>
+
+  <main id="project">
+    <div class="player-band" id="player-band" hidden>
+      <div class="player" id="player"></div>
+    </div>
+    <div class="tape tape--thin" aria-hidden="true"></div>
+
+    <div class="wrap">
+      <div class="project-head">
+        <div>
+          <h1 class="project-title" id="title"></h1>
+          <div class="project-desc" id="desc"></div>
+          <div class="chips" id="tags" aria-label="Software used"></div>
+        </div>
+        <dl class="credits" id="credits"></dl>
+      </div>
+
+      <div class="gallery" id="gallery"></div>
+    </div>
+
+    <div class="tape tape--thin" aria-hidden="true"></div>
+    <nav class="wrap pager" id="pager" aria-label="Other projects"></nav>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <a class="brand" href="index.html">gabriel_pinotti<span>_</span></a>
+      <div class="socials" data-socials></div>
+      <span>&copy; <span data-year></span> <span data-name>Gabriel Pinotti</span></span>
+    </div>
+  </footer>
+
+  <script src="JS/common.js"></script>
+  <script src="JS/project.js"></script>
+</body>
+</html>

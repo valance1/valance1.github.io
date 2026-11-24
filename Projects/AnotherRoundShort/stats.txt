@@ -1,13 +1,7 @@
-Triangles: 
-
-Materials: 
-
-Texture Size: 
-
-Texel Density: 
-
-Workflow: 
-
-Target Engine: 
-
-Collaborators:
+# Credits shown next to the description. Leave a value empty to hide that line.
+# Text in (parentheses) appears as a small note. Comma lists are shown one per line.
+# You can add any other "Name: value" line too.
+Year: 
+Client: 
+Role: 
+Collaborators: 
