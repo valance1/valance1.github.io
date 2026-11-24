@@ -238,7 +238,11 @@ const Motion = (() => {
           scrollTrigger: { trigger: tape, start: "top 85%", toggleActions: "play none none reverse" },
           onStart: () => {
             const word = label.querySelector(".w");
-            if (word) scramble(word, null, 0.7);
+            if (word) scramble(word, null, 0.7).then(() => {
+              if (label.dataset.lit) return;
+              label.dataset.lit = "1";
+              flicker(label);
+            });
           },
         });
     });
@@ -309,6 +313,88 @@ const Motion = (() => {
     track.querySelectorAll("img").forEach((img) => img.addEventListener("load", refresh, { once: true }));
   }
 
+  /* ---------- Failing light ---------- */
+
+  /* A title stutters on like a bad lamp, glows for a moment, then settles */
+  function flicker(el) {
+    if (!on || !el) return;
+    const glow = "0 0 22px rgba(242, 179, 61, 0.5), 0 0 2px rgba(255, 236, 200, 0.7)";
+    const dark = "0 0 0px rgba(242, 179, 61, 0), 0 0 0px rgba(255, 236, 200, 0)";
+    const beats = [[0.12, 0.05], [1, 0.07], [0.35, 0.04], [1, 0.13], [0.06, 0.07], [0.85, 0.05], [0.25, 0.03], [1, 0.05]];
+    const tl = gsap.timeline();
+    beats.forEach(([opacity, hold]) => {
+      tl.set(el, { opacity, textShadow: opacity > 0.8 ? glow : dark });
+      tl.to({}, { duration: hold + Math.random() * 0.05 });
+    });
+    tl.set(el, { textShadow: glow })
+      .to(el, { textShadow: dark, duration: 1.1, ease: "power2.out", clearProps: "textShadow" });
+  }
+
+  /* Dust drifting through the banner light. Pauses when off screen. */
+  function dust(canvas) {
+    if (!on || !canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    // soft dot sprite, drawn once
+    const sprite = document.createElement("canvas");
+    sprite.width = sprite.height = 64;
+    const sctx = sprite.getContext("2d");
+    const g = sctx.createRadialGradient(32, 32, 0, 32, 32, 32);
+    g.addColorStop(0, "rgba(255, 240, 215, 1)");
+    g.addColorStop(0.35, "rgba(255, 236, 205, 0.55)");
+    g.addColorStop(1, "rgba(255, 230, 200, 0)");
+    sctx.fillStyle = g;
+    sctx.fillRect(0, 0, 64, 64);
+
+    let w = 0, h = 0, dpr = 1, motes = [];
+    const spawn = (anywhere) => {
+      const bokeh = Math.random() < 0.14;
+      return {
+        x: Math.random() * w,
+        y: anywhere ? Math.random() * h : h + 10,
+        r: bokeh ? 8 + Math.random() * 14 : 1.4 + Math.random() * 2.8,
+        a: bokeh ? 0.08 + Math.random() * 0.1 : 0.45 + Math.random() * 0.45,
+        vx: (Math.random() - 0.5) * 0.12,
+        vy: -(0.05 + Math.random() * 0.22),
+        sway: Math.random() * Math.PI * 2,
+        swaySpeed: 0.004 + Math.random() * 0.01,
+        twinkle: Math.random() * Math.PI * 2,
+      };
+    };
+    const resize = () => {
+      const r = canvas.getBoundingClientRect();
+      dpr = Math.min(window.devicePixelRatio || 1, 2);
+      w = r.width; h = r.height;
+      canvas.width = Math.round(w * dpr);
+      canvas.height = Math.round(h * dpr);
+      const count = Math.round(Math.min(120, (w * h) / 11000));
+      motes = Array.from({ length: count }, () => spawn(true));
+    };
+    resize();
+    window.addEventListener("resize", () => { clearTimeout(resize.t); resize.t = setTimeout(resize, 200); });
+
+    let visible = true;
+    new IntersectionObserver(([entry]) => { visible = entry.isIntersecting; }).observe(canvas);
+
+    gsap.ticker.add(() => {
+      if (!visible) return;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, w, h);
+      motes.forEach((m, i) => {
+        m.sway += m.swaySpeed;
+        m.twinkle += 0.02;
+        m.x += m.vx + Math.sin(m.sway) * 0.15;
+        m.y += m.vy;
+        if (m.y < -20 || m.x < -20 || m.x > w + 20) motes[i] = spawn(false);
+        ctx.globalAlpha = m.a * (0.65 + 0.35 * Math.sin(m.twinkle));
+        const d = m.r * 2;
+        ctx.drawImage(sprite, m.x - m.r, m.y - m.r, d, d);
+      });
+      ctx.globalAlpha = 1;
+    });
+  }
+
   /* ---------- Home hero ---------- */
 
   function hero() {
@@ -316,6 +402,7 @@ const Motion = (() => {
     if (!heroEl || !on) return;
 
     const bg = heroEl.querySelector(".hero-bg");
+    dust(heroEl.querySelector(".hero-dust"));
     const outline = heroEl.querySelector(".hero-outline");
     const inner = heroEl.querySelector(".hero-inner");
 
@@ -330,6 +417,7 @@ const Motion = (() => {
       const layers = [
         [bg, 18, 12],
         [outline, 46, 26],
+        [heroEl.querySelector(".hero-dust"), 60, 36],
         [inner, 10, 6],
       ].filter(([el]) => el).map(([el, ax, ay]) => ({
         x: gsap.quickTo(el, "x", { duration: 0.9, ease: "power3.out" }),
@@ -353,7 +441,7 @@ const Motion = (() => {
     await entered;
     const tl = gsap.timeline();
     tl.to(".hero-title", { autoAlpha: 1, duration: 0.01 })
-      .call(() => scramble(title, title.textContent, 1.1))
+      .call(() => scramble(title, title.textContent, 1.1).then(() => flicker(document.querySelector(".hero-title"))))
       .fromTo(".hero-outline", { autoAlpha: 0, xPercent: 8 }, { autoAlpha: 1, xPercent: 0, duration: 1.6, ease: "power3.out" }, 0)
       .fromTo(".hero-roles li", { autoAlpha: 0, y: 16 }, { autoAlpha: 1, y: 0, duration: 0.6, ease: "power3.out", stagger: 0.07 }, 0.55)
       .fromTo(".hero-place", { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.6 }, 1)
@@ -585,7 +673,7 @@ const Motion = (() => {
     gsap.timeline()
       .fromTo("#player-band:not([hidden]) .player", { autoAlpha: 0, scale: 0.97 }, { autoAlpha: 1, scale: 1, duration: 1, ease: "power3.out" })
       .set("#title", { autoAlpha: 1 }, 0.15)
-      .call(() => title && scramble(title, title.textContent, 0.9), null, 0.15)
+      .call(() => title && scramble(title, title.textContent, 0.9).then(() => flicker(document.getElementById("title"))), null, 0.15)
       .fromTo(["#desc", "#tags"], { autoAlpha: 0, y: 20 }, { autoAlpha: 1, y: 0, duration: 0.7, ease: "power3.out", stagger: 0.1 }, 0.35)
       .fromTo("#credits > div", { autoAlpha: 0, x: 16 }, { autoAlpha: 1, x: 0, duration: 0.6, ease: "power3.out", stagger: 0.08 }, 0.45);
     tapes();
@@ -603,7 +691,7 @@ const Motion = (() => {
     gsap.timeline()
       .fromTo(".avatar-wrap", { clipPath: "inset(100% 0% 0% 0%)", autoAlpha: 1 }, { clipPath: "inset(0% 0% 0% 0%)", duration: 1, ease: "power4.out" })
       .set(".about-intro h1", { autoAlpha: 1 }, 0.1)
-      .call(() => scramble(name, name.textContent, 1), null, 0.1)
+      .call(() => scramble(name, name.textContent, 1).then(() => flicker(document.querySelector(".about-intro h1"))), null, 0.1)
       .fromTo([".about-intro .hero-place", ".about-intro .summary"], { autoAlpha: 0, y: 18 }, { autoAlpha: 1, y: 0, duration: 0.7, stagger: 0.12, ease: "power3.out" }, 0.4);
     tapes();
     reveal(".chips .chip", { y: 12, stagger: 0.03 });
@@ -649,7 +737,7 @@ const Motion = (() => {
       once: true,
       onEnter: () => {
         gsap.to([".contact-title", ".contact-sub", ".contact-actions"], { autoAlpha: 1, y: 0, duration: 0.8, stagger: 0.12, ease: "power3.out" });
-        scramble(word, word.textContent, 1.2);
+        scramble(word, word.textContent, 1.2).then(() => flicker(block.querySelector(".contact-title")));
       },
     });
   }
@@ -677,5 +765,5 @@ const Motion = (() => {
   /* Safety net: never leave hidden content if something fails */
   if (on) setTimeout(() => root.classList.remove("js"), 9000);
 
-  return { on, lenis: () => lenis, entered, ready, magnets, timeline, go, scramble, reveal, tapes, refresh, hero, heroIntro, heroSlides, arrange, tabInk, cards, projectIntro, aboutIntro };
+  return { on, lenis: () => lenis, entered, flicker, ready, magnets, timeline, go, scramble, reveal, tapes, refresh, hero, heroIntro, heroSlides, arrange, tabInk, cards, projectIntro, aboutIntro };
 })();

@@ -1048,3 +1048,14 @@ model-viewer {
   .is-art .project-head { grid-template-columns: 1fr; }
   .art-info { position: static; order: -1; }
 }
+
+/* Dust in the banner light */
+.hero-dust {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+  pointer-events: none;
+  mix-blend-mode: screen;
+}
