@@ -20,6 +20,16 @@ const Motion = (() => {
     if (window.ScrollTrigger) gsap.registerPlugin(ScrollTrigger);
   }
 
+  /* ---------- Smooth scroll (Lenis) ---------- */
+
+  let lenis = null;
+  if (on && window.Lenis && window.ScrollTrigger) {
+    lenis = new Lenis({ lerp: 0.1, anchors: { offset: -72 }, autoRaf: false });
+    lenis.on("scroll", ScrollTrigger.update);
+    gsap.ticker.add((time) => lenis.raf(time * 1000));
+    gsap.ticker.lagSmoothing(0);
+  }
+
   /* ---------- Text scramble (terminal decode) ---------- */
 
   const GLYPHS = "!<>-_\\/[]{}=+*^?#%&01ABCDEFGHJKLMNPQRSTUVWXYZ";
@@ -175,31 +185,69 @@ const Motion = (() => {
     });
   }
 
-  /* Images in the project gallery: wipe in, then drift slowly */
-  function gallery(container) {
-    if (!on || !container) return;
-    container.querySelectorAll("figure").forEach((fig) => {
-      gsap.fromTo(fig,
-        { clipPath: "inset(12% 0% 12% 0%)", autoAlpha: 0.2 },
-        {
-          clipPath: "inset(0% 0% 0% 0%)",
-          autoAlpha: 1,
-          duration: 1.1,
-          ease: "power3.out",
-          scrollTrigger: { trigger: fig, start: "top 88%", once: true },
-        });
-      const img = fig.querySelector(":scope > img");
-      if (img) {
-        fig.classList.add("drift");
-        gsap.fromTo(img, { yPercent: -4, scale: 1.1 }, {
-          yPercent: 4,
-          scale: 1.1,
-          ease: "none",
-          scrollTrigger: { trigger: fig, start: "top bottom", end: "bottom top", scrub: true },
-        });
-      }
+  /* Horizontal gallery: pinned and scroll-driven on wide screens,
+     a swipeable strip everywhere else */
+  function hgallery(section) {
+    if (!section || section.hidden) return;
+    const scroller = section.querySelector(".hgallery");
+    const track = section.querySelector(".hgallery-track");
+    const bar = section.querySelector(".hgallery-bar i");
+    const count = section.querySelector(".hgallery-count");
+    const figs = [...track.children];
+    const n = figs.length;
+    const setCount = (i) => { count.textContent = `${i} / ${n}`; };
+    const setBar = (p) => { bar.style.transform = `scaleX(${p})`; };
+    setCount(1);
+
+    const wide = window.matchMedia("(min-width: 761px)").matches;
+    if (!on || !wide || n < 2) {
+      const update = () => {
+        const max = scroller.scrollWidth - scroller.clientWidth;
+        const p = max > 0 ? scroller.scrollLeft / max : 1;
+        setBar(p);
+        setCount(Math.round(p * (n - 1)) + 1);
+      };
+      scroller.addEventListener("scroll", update, { passive: true });
+      window.addEventListener("load", update);
+      update();
+      if (on) reveal(figs, { y: 24 });
+      return;
+    }
+
+    section.classList.add("is-pinned");
+    const pin = section.querySelector(".hgallery-pin");
+    const distance = () => Math.max(0, track.scrollWidth - window.innerWidth);
+
+    const strip = gsap.to(track, {
+      x: () => -distance(),
+      ease: "none",
+      scrollTrigger: {
+        trigger: pin,
+        start: "top top",
+        end: () => `+=${distance()}`,
+        pin: true,
+        scrub: 0.8,
+        invalidateOnRefresh: true,
+        onUpdate: (self) => {
+          setBar(self.progress);
+          setCount(Math.min(n, Math.floor(self.progress * n) + 1));
+        },
+      },
     });
-    container.querySelectorAll("img").forEach((img) => img.addEventListener("load", refresh, { once: true }));
+
+    // Each picture drifts inside its frame as it crosses the screen
+    figs.forEach((fig) => {
+      const img = fig.querySelector(".shot > img");
+      if (!img) return;
+      gsap.fromTo(img, { xPercent: -5, scale: 1.12 }, {
+        xPercent: 5,
+        scale: 1.12,
+        ease: "none",
+        scrollTrigger: { trigger: fig, containerAnimation: strip, start: "left right", end: "right left", scrub: true },
+      });
+    });
+
+    track.querySelectorAll("img").forEach((img) => img.addEventListener("load", refresh, { once: true }));
   }
 
   /* ---------- Home hero ---------- */
@@ -316,7 +364,7 @@ const Motion = (() => {
       .fromTo(["#desc", "#tags"], { autoAlpha: 0, y: 20 }, { autoAlpha: 1, y: 0, duration: 0.7, ease: "power3.out", stagger: 0.1 }, 0.35)
       .fromTo("#credits > div", { autoAlpha: 0, x: 16 }, { autoAlpha: 1, x: 0, duration: 0.6, ease: "power3.out", stagger: 0.08 }, 0.45);
     tapes();
-    gallery(document.getElementById("gallery"));
+    hgallery(document.getElementById("gallery-section"));
   }
 
   /* ---------- About page ---------- */
@@ -339,5 +387,5 @@ const Motion = (() => {
   /* Safety net: never leave hidden content if something fails */
   if (on) setTimeout(() => root.classList.remove("js"), 6000);
 
-  return { on, entered, go, scramble, reveal, tapes, refresh, hero, heroIntro, heroBg, cards, projectIntro, aboutIntro };
+  return { on, lenis: () => lenis, entered, go, scramble, reveal, tapes, refresh, hero, heroIntro, heroBg, cards, projectIntro, aboutIntro };
 })();

@@ -97,13 +97,17 @@
 
   /* ---------- Gallery ---------- */
 
-  document.getElementById("gallery").innerHTML = rest
+  const shots = rest
     .map((m) => {
       const body = embed(m);
       if (!body) return "";
-      return `<figure>${body}${m.caption ? `<figcaption>${esc(m.caption)}</figcaption>` : ""}</figure>`;
+      return `<figure><div class="shot">${body}</div>${m.caption ? `<figcaption>${esc(m.caption)}</figcaption>` : ""}</figure>`;
     })
-    .join("");
+    .filter(Boolean);
+  if (shots.length) {
+    document.getElementById("gallery-track").innerHTML = shots.join("");
+    document.getElementById("gallery-section").hidden = false;
+  }
 
   document.querySelectorAll(".compare").forEach((c) => {
     const after = c.querySelector(".after");

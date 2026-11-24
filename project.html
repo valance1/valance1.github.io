@@ -12,6 +12,7 @@
   <link rel="stylesheet" href="CSS/site.css" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/lenis@1.3.28/dist/lenis.min.js" defer></script>
   <script src="JS/common.js" defer></script>
   <script src="JS/motion.js" defer></script>
   <script src="JS/project.js" defer></script>
@@ -46,8 +47,18 @@
         <dl class="credits" id="credits"></dl>
       </div>
 
-      <div class="gallery" id="gallery"></div>
     </div>
+
+    <section class="gallery-section" id="gallery-section" hidden>
+      <div class="tape"><h2 class="tape-label"><span class="p">&gt;</span><span class="w">GALLERY</span><span class="p">&lt;</span></h2></div>
+      <div class="hgallery-pin">
+        <div class="hgallery" id="gallery"><div class="hgallery-track" id="gallery-track"></div></div>
+        <div class="wrap hgallery-meta">
+          <span class="hgallery-count" id="gallery-count"></span>
+          <span class="hgallery-bar" aria-hidden="true"><i id="gallery-bar"></i></span>
+        </div>
+      </div>
+    </section>
 
     <div class="tape tape--thin" aria-hidden="true"></div>
     <nav class="wrap pager" id="pager" aria-label="Other projects"></nav>
