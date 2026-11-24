@@ -46,4 +46,6 @@
       })
       .join("");
   }
+
+  Motion.aboutIntro();
 })();

@@ -153,27 +153,54 @@ a { color: inherit; }
   background: var(--panel);
 }
 
-.hero-bg {
+.hero-bg-wrap,
+.hero-outline-wrap {
   position: absolute;
   inset: 0;
+  pointer-events: none;
+}
+.hero-bg-wrap { z-index: 0; }
+.hero-outline-wrap { z-index: 2; overflow: hidden; }
+
+.hero-bg {
+  position: absolute;
+  inset: -5%;
   background-size: cover;
   background-position: center 30%;
   opacity: 0;
   transition: opacity 0.8s ease;
+  will-change: transform;
 }
 .hero-bg.is-loaded { opacity: 1; }
+
+/* Big outlined word, the middle depth layer */
+.hero-outline {
+  position: absolute;
+  right: -2vw;
+  top: 10%;
+  font-family: var(--mono);
+  font-weight: 700;
+  font-size: clamp(90px, 16vw, 260px);
+  line-height: 0.8;
+  letter-spacing: -0.06em;
+  white-space: nowrap;
+  color: transparent;
+  -webkit-text-stroke: 1.5px rgba(236, 230, 220, 0.22);
+  will-change: transform;
+}
 
 .hero::after {
   content: "";
   position: absolute;
   inset: 0;
+  z-index: 1;
   background:
     linear-gradient(to top, var(--stage) 0%, rgba(23, 21, 28, 0.75) 35%, rgba(23, 21, 28, 0.15) 75%);
 }
 
 .hero-content {
   position: relative;
-  z-index: 1;
+  z-index: 3;
   padding-bottom: clamp(40px, 7vw, 80px);
 }
 
@@ -557,3 +584,81 @@ a { color: inherit; }
   gap: 16px;
 }
 .site-footer .brand { margin-right: 0; color: var(--paper); }
+
+/* =========================================================
+   Motion
+   ========================================================= */
+
+/* Page transition cover */
+.wipe {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: none;
+  place-items: center;
+  visibility: hidden;
+  pointer-events: none;
+  background:
+    repeating-linear-gradient(-45deg, var(--panel) 0 14px, var(--panel-2) 14px 28px);
+}
+.js .wipe,
+.motion-on .wipe { display: grid; }
+.js .wipe { visibility: visible; }
+
+.wipe-label {
+  font-family: var(--mono);
+  font-weight: 700;
+  font-size: clamp(22px, 4vw, 44px);
+  letter-spacing: -0.02em;
+  background: var(--stage);
+  border: 1px solid var(--line);
+  padding: 12px 28px;
+  max-width: calc(100vw - 32px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Hidden until their intro plays (only while JS is running) */
+.js .hero-title,
+.js .hero-roles li,
+.js .hero-place,
+.js .hero-outline,
+.js .jump > *,
+.js #title,
+.js #desc,
+.js #tags,
+.js #credits > div,
+.js .player,
+.js .avatar,
+.js .about-intro h1,
+.js .about-intro .hero-place,
+.js .about-intro .summary { opacity: 0; }
+
+/* If the animation script never starts, show everything anyway */
+@keyframes failsafe-hide { to { visibility: hidden; } }
+@keyframes failsafe-show { to { opacity: 1; } }
+.js:not(.motion-on) .wipe { animation: failsafe-hide 0s 2s forwards; }
+.js:not(.motion-on) :is(.hero-title, .hero-roles li, .hero-place, .hero-outline, .jump > *, #title, #desc, #tags, #credits > div, .player, .avatar, .about-intro h1, .about-intro .summary) {
+  animation: failsafe-show 0s 2s forwards;
+}
+
+/* Cards: 3D tilt with a light glare */
+.card { perspective: 1000px; }
+.card-thumb {
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+.glare {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  background: radial-gradient(circle at var(--gx, 50%) var(--gy, 50%), rgba(255, 236, 200, 0.38), rgba(255, 236, 200, 0) 55%);
+  mix-blend-mode: overlay;
+}
+
+/* Gallery images drift inside their frame */
+.gallery figure.drift { overflow: hidden; border: 1px solid var(--line); }
+.gallery figure.drift > img { border: 0; transform: scale(1.1); }

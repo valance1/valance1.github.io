@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <script>document.documentElement.classList.add("js")</script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Gabriel Pinotti | 3D Animator</title>
   <meta name="description" content="3D animation portfolio of Gabriel Pinotti: music video shorts and collaborations." />
@@ -10,12 +11,18 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;800&family=IBM+Plex+Mono:wght@400;500;700&display=swap" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
   <link rel="stylesheet" href="CSS/site.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer></script>
+  <script src="JS/common.js" defer></script>
+  <script src="JS/motion.js" defer></script>
+  <script src="JS/home.js" defer></script>
   <link rel="icon" href="Resources/favicon/pilfav.png" type="image/png" />
 </head>
 <body>
+  <div class="wipe" aria-hidden="true"><span class="wipe-label">&gt;gabriel_pinotti_</span></div>
   <header class="site-header">
     <div class="wrap">
-      <a class="brand" href="index.html">gabriel_pinotti<span>_</span></a>
+      <a class="brand" href="index.html" data-label="gabriel_pinotti">gabriel_pinotti<span>_</span></a>
       <nav class="site-nav" aria-label="Main">
         <a href="index.html" aria-current="page">Work</a>
         <a href="about.html">About</a>
@@ -26,11 +33,14 @@
 
   <main>
     <section class="hero" aria-label="Intro">
-      <div class="hero-bg" id="hero-bg"></div>
+      <div class="hero-bg-wrap"><div class="hero-bg" id="hero-bg"></div></div>
+      <div class="hero-outline-wrap" aria-hidden="true"><div class="hero-outline">ANIMATION</div></div>
       <div class="wrap hero-content">
-        <h1 class="hero-title"><span data-name>Gabriel Pinotti</span><span class="cursor" aria-hidden="true">_</span></h1>
-        <ul class="hero-roles" id="hero-roles"></ul>
-        <p class="hero-place" id="hero-place"></p>
+        <div class="hero-inner">
+          <h1 class="hero-title"><span data-name>Gabriel Pinotti</span><span class="cursor" aria-hidden="true">_</span></h1>
+          <ul class="hero-roles" id="hero-roles"></ul>
+          <p class="hero-place" id="hero-place"></p>
+        </div>
       </div>
     </section>
 
@@ -44,14 +54,14 @@
     </nav>
 
     <section id="work">
-      <div class="tape"><h2 class="tape-label"><span class="p">&gt;</span>MY WORK<span class="p">&lt;</span></h2></div>
+      <div class="tape"><h2 class="tape-label"><span class="p">&gt;</span><span class="w">MY WORK</span><span class="p">&lt;</span></h2></div>
       <div class="wrap section">
         <div class="grid" id="work-grid" aria-live="polite"></div>
       </div>
     </section>
 
     <section id="soon" hidden>
-      <div class="tape"><h2 class="tape-label"><span class="p">&gt;</span>IN PRODUCTION<span class="p">&lt;</span></h2></div>
+      <div class="tape"><h2 class="tape-label"><span class="p">&gt;</span><span class="w">IN PRODUCTION</span><span class="p">&lt;</span></h2></div>
       <div class="wrap section">
         <div class="grid" id="soon-grid"></div>
       </div>
@@ -60,13 +70,11 @@
 
   <footer class="site-footer">
     <div class="wrap">
-      <a class="brand" href="index.html">gabriel_pinotti<span>_</span></a>
+      <a class="brand" href="index.html" data-label="gabriel_pinotti">gabriel_pinotti<span>_</span></a>
       <div class="socials" data-socials></div>
       <span>&copy; <span data-year></span> <span data-name>Gabriel Pinotti</span></span>
     </div>
   </footer>
 
-  <script src="JS/common.js"></script>
-  <script src="JS/home.js"></script>
 </body>
 </html>

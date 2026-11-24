@@ -11,6 +11,8 @@
     .filter(Boolean);
   document.getElementById("hero-roles").innerHTML = roles.map((r) => `<li>${esc(r)}</li>`).join("");
   if (user.place) document.getElementById("hero-place").textContent = `Based in ${user.place}`;
+  Motion.hero();
+  Motion.heroIntro();
 
   /* Projects, in the order of Config/projects.txt */
   const grid = document.getElementById("work-grid");
@@ -32,6 +34,7 @@
     : `<p class="empty">No projects yet. Add a folder name to Config/projects.txt.</p>`;
 
   grid.querySelectorAll(".card-thumb img").forEach(Site.fixYouTubeThumb);
+  Motion.cards(grid);
 
   /* Hero banner: first media line marked with *, otherwise the first project's thumbnail */
   const bannerSrc = (projects.find((p) => p.banner) || {}).banner || (projects[0] && projects[0].thumb);
@@ -41,8 +44,7 @@
     probe.onload = () => {
       let src = bannerSrc;
       if (probe.naturalWidth === 120) src = bannerSrc.replace("maxresdefault", "hqdefault");
-      bg.style.backgroundImage = `url("${src}")`;
-      bg.classList.add("is-loaded");
+      Motion.heroBg(bg, src);
     };
     probe.src = bannerSrc;
   }
@@ -63,4 +65,7 @@
         </div>`)
       .join("");
   }
+
+  Motion.tapes();
+  Motion.refresh();
 })();

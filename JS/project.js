@@ -9,9 +9,10 @@
   const p = slug ? await Site.project(slug) : null;
 
   if (!p) {
-    document.getElementById("title").innerHTML = `<span class="p">&gt;</span>Project not found`;
+    document.getElementById("title").innerHTML = `<span class="p">&gt;</span><span class="t">Project not found</span>`;
     document.getElementById("desc").innerHTML =
       `<p>There is no project called "${esc(slug)}". Check the folder name in Config/projects.txt, or <a href="index.html">go back to all work</a>.</p>`;
+    Motion.projectIntro();
     return;
   }
 
@@ -72,7 +73,7 @@
 
   /* ---------- Text ---------- */
 
-  document.getElementById("title").innerHTML = `<span class="p">&gt;</span>${esc(p.title)}`;
+  document.getElementById("title").innerHTML = `<span class="p">&gt;</span><span class="t">${esc(p.title)}</span>`;
   document.getElementById("desc").innerHTML = Site.richText(p.description);
   document.getElementById("tags").innerHTML = p.tags.map((t) => `<span class="chip">${esc(t)}</span>`).join("");
 
@@ -113,6 +114,8 @@
     });
   });
 
+  Motion.projectIntro();
+
   /* ---------- Previous / next ---------- */
 
   const at = slugs.indexOf(slug);
@@ -123,18 +126,20 @@
     const [prev, next] = await Promise.all([Site.project(prevSlug), Site.project(nextSlug)]);
 
     pager.innerHTML = `
-      ${prev ? `<a class="pager-side prev" href="${prev.url}"><small><i class="fa-solid fa-chevron-left" aria-hidden="true"></i> Previous</small><strong>${esc(prev.title)}</strong></a>` : "<span></span>"}
-      <a class="pager-all" href="index.html#work">All work</a>
-      ${next ? `<a class="pager-side next" href="${next.url}"><small>Next <i class="fa-solid fa-chevron-right" aria-hidden="true"></i></small><strong>${esc(next.title)}</strong></a>` : "<span></span>"}`;
+      ${prev ? `<a class="pager-side prev" href="${prev.url}" data-label="${esc(prev.title)}"><small><i class="fa-solid fa-chevron-left" aria-hidden="true"></i> Previous</small><strong>${esc(prev.title)}</strong></a>` : "<span></span>"}
+      <a class="pager-all" href="index.html#work" data-label="all work">All work</a>
+      ${next ? `<a class="pager-side next" href="${next.url}" data-label="${esc(next.title)}"><small>Next <i class="fa-solid fa-chevron-right" aria-hidden="true"></i></small><strong>${esc(next.title)}</strong></a>` : "<span></span>"}`;
+    Motion.reveal(".pager > *", { y: 14 });
 
     /* Keyboard: left/right to switch project, Esc for all work */
     document.addEventListener("keydown", (e) => {
       if (e.target.closest("input, textarea")) return;
-      if (e.key === "ArrowLeft" && prev) location.href = prev.url;
-      if (e.key === "ArrowRight" && next) location.href = next.url;
-      if (e.key === "Escape") location.href = "index.html#work";
+      if (e.key === "ArrowLeft" && prev) Motion.go(prev.url, prev.title);
+      if (e.key === "ArrowRight" && next) Motion.go(next.url, next.title);
+      if (e.key === "Escape") Motion.go("index.html#work", "all work");
     });
   } else {
     pager.innerHTML = `<span></span><a class="pager-all" href="index.html#work">All work</a><span></span>`;
   }
+
 })();
