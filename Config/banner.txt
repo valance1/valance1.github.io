@@ -1,0 +1,8 @@
+# Images for the home banner slideshow, one per line, in order.
+# Files in Resources/banner/ or full https:// links. Wide images (16:9) work best.
+Resources/banner/never-be-alone.jpg
+Resources/banner/dead.jpg
+Resources/banner/asdads.jpg
+Resources/banner/thumbjail1.jpg
+Resources/banner/vanny-water.jpg
+Resources/banner/water-farm.jpg

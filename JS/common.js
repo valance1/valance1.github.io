@@ -189,20 +189,39 @@ const Site = (() => {
       })
       .filter(Boolean);
 
+    /* Category: Animation, 3D or 2D. Taken out of the credits list.
+       Without one, it is guessed from the media: video means Animation,
+       a .glb model means 3D, images only means 2D. */
+    const catLine = info.find((i) => /^categor(y|ies)$/i.test(i.key));
+    const credits = info.filter((i) => i !== catLine);
+    const CANON = { animation: "Animation", anim: "Animation", video: "Animation", "3d": "3D", sculpt: "3D", sculpture: "3D", "2d": "2D", art: "2D", drawing: "2D", illustration: "2D" };
+    let categories = (catLine ? catLine.value.split(",") : [])
+      .map((c) => CANON[c.trim().toLowerCase()])
+      .filter(Boolean);
+    if (!categories.length) {
+      if (parsed.items.some((m) => ["youtube", "video"].includes(m.type))) categories = ["Animation"];
+      else if (parsed.items.some((m) => ["model", "sketchfab", "marmoset"].includes(m.type))) categories = ["3D"];
+      else categories = ["2D"];
+    }
+    categories = [...new Set(categories)];
+
     const p = {
       slug,
+      categories,
       title,
       description,
       tags: tags.split(",").map((t) => t.trim()).filter(Boolean),
       thumbnail: thumbnail.trim(),
       media: parsed.items,
       banner: parsed.banner,
-      info,
+      info: credits,
       url: `project.html?p=${encodeURIComponent(slug)}`,
     };
     p.thumb = thumbFor(p);
-    p.year = (info.find((i) => /^year$/i.test(i.key)) || {}).value || "";
-    p.client = (info.find((i) => /^client$/i.test(i.key)) || {}).value || "";
+    p.year = (credits.find((i) => /^year$/i.test(i.key)) || {}).value || "";
+    p.client = (credits.find((i) => /^client$/i.test(i.key)) || {}).value || "";
+    /* Image-only projects (no video, no 3D viewer) get the ArtStation-style page */
+    p.isArt = !p.media.some((m) => ["youtube", "video", "sketchfab", "marmoset", "model"].includes(m.type));
     return p;
   }
 

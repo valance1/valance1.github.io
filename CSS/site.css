@@ -904,3 +904,111 @@ model-viewer {
   --poster-color: transparent;
   --progress-bar-color: var(--spot);
 }
+
+/* =========================================================
+   Banner slideshow, category tabs, mosaic, image projects
+   ========================================================= */
+
+.hero-slide {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  will-change: transform, opacity;
+}
+
+/* Tabs */
+.tabs {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 26px;
+  margin-bottom: 36px;
+  border-bottom: 1px solid var(--line);
+}
+.tabs[hidden] { display: none; }
+.tab {
+  font-family: var(--mono);
+  font-size: 15px;
+  color: var(--muted);
+  background: none;
+  border: 0;
+  padding: 10px 0 12px;
+  cursor: pointer;
+}
+.tab:hover { color: var(--paper); }
+.tab[aria-pressed="true"] { color: var(--paper); }
+.tab-n {
+  margin-left: 8px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.tab[aria-pressed="true"] .tab-n { color: var(--spot); }
+.tab-ink {
+  position: absolute;
+  left: 0;
+  bottom: -1px;
+  height: 2px;
+  width: 0;
+  background: var(--spot);
+}
+
+/* Mosaic */
+.masonry { position: relative; }
+.masonry .card {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+.masonry .card-thumb { aspect-ratio: var(--ar, 16 / 9); }
+
+/* Type label on each thumbnail */
+.card-kind {
+  position: absolute;
+  left: 10px;
+  top: 10px;
+  font-family: var(--mono);
+  font-size: 12px;
+  padding: 3px 8px;
+  background: rgba(23, 21, 28, 0.82);
+  border: 1px solid var(--line);
+  color: var(--paper);
+  pointer-events: none;
+}
+
+/* Image projects: ArtStation-style page */
+.is-art .project-head {
+  grid-template-columns: minmax(0, 1fr) 340px;
+  align-items: start;
+}
+.art-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+.art-stack img {
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--line);
+}
+.art-stack figcaption {
+  margin-top: 10px;
+  font-size: 15px;
+  color: var(--muted);
+}
+.art-info {
+  position: sticky;
+  top: 88px;
+}
+.is-art .project-title { font-size: clamp(26px, 3vw, 40px); }
+.is-art .credits {
+  margin-top: 28px;
+  border-left: 0;
+  padding-left: 0;
+  border-top: 1px solid var(--line);
+  padding-top: 24px;
+}
+@media (max-width: 860px) {
+  .is-art .project-head { grid-template-columns: 1fr; }
+  .art-info { position: static; order: -1; }
+}

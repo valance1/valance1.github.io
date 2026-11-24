@@ -1,6 +1,8 @@
 # Credits shown next to the description. Leave a value empty to hide that line.
 # Text in (parentheses) appears as a small note. Comma lists are shown one per line.
 # You can add any other "Name: value" line too.
+# Category: Animation, 3D or 2D (several allowed, comma separated). It sorts the project into the home tabs.
+Category: Animation
 Year: 
 Client: 
 Role: 

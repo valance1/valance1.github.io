@@ -19,7 +19,8 @@ Os antigos `Projects/<Nome>/<Nome>.html` agora só redirecionam para `project.ht
 2. Edite os três arquivos dentro dela:
    - `description.txt`: título, descrição, software (separado por vírgula) e thumbnail opcional, separados por linhas `---`. Sem thumbnail, o site usa a do vídeo do YouTube.
    - `media.txt`: uma mídia por linha. O primeiro vídeo vira o player grande; o resto aparece na galeria horizontal embaixo. Aceita YouTube, imagens, comparação antes/depois, .mp4, Sketchfab e modelos 3D `.glb` (exportados do Blender), que viram um visualizador girável. Veja os comentários no arquivo de exemplo.
-   - `stats.txt`: créditos (`Year`, `Client`, `Role`, `Collaborators`). Linha sem valor não aparece. `Year` e `Client` também aparecem no card da página inicial.
+   - `stats.txt`: `Category` (Animation, 3D ou 2D; pode combinar, separado por vírgula) define em qual aba o projeto aparece. Os outros campos são créditos (`Year`, `Client`, `Role`, `Collaborators`); linha sem valor não aparece. `Year` e `Client` também aparecem no card da página inicial.
+   - Projeto só com imagens (sem vídeo nem 3D) ganha a página estilo ArtStation: imagens grandes empilhadas e informações fixas ao lado. No mosaico da home, a miniatura mantém o formato da imagem.
 3. Adicione `MeuProjeto` em `Config/projects.txt`. A ordem desse arquivo é a ordem da grade e do botão próximo/anterior.
 
 ## Outras configurações
@@ -27,7 +28,7 @@ Os antigos `Projects/<Nome>/<Nome>.html` agora só redirecionam para `project.ht
 - `Config/userinformation.txt`: foto, nome, funções (separadas por `|`), local e links sociais (um por linha). Um e-mail numa linha própria vira o botão "copiar e-mail" da chamada de contato.
 - `Config/inproduction.txt`: projetos em andamento, `Título | nota`. Vazio = seção escondida.
 - `Config/summary.txt`, `software.txt`, `skills.txt`, `productions.txt`: página About.
-- Banner da home: termine uma linha de imagem em qualquer `media.txt` com `*`. Sem isso, usa a thumbnail do primeiro projeto.
+- `Config/banner.txt`: imagens do slideshow do banner (uma por linha, arquivos em `Resources/banner/`). Prefira JPEG 16:9 de até 1920 px de largura.
 - Cores: no topo de `CSS/site.css` (`--spot` é a cor de destaque).
 - Animações: `JS/motion.js` (GSAP + ScrollTrigger + Lenis). Quem tem "reduzir movimento" ativado no sistema vê o site sem animação.
 

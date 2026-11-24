@@ -360,12 +360,110 @@ const Motion = (() => {
       .fromTo(".jump > *", { autoAlpha: 0, y: 10 }, { autoAlpha: 1, y: 0, duration: 0.5, stagger: 0.06, ease: "power2.out" }, 0.9);
   }
 
-  function heroBg(bg, src) {
-    bg.style.backgroundImage = `url("${src}")`;
-    if (!on) { bg.classList.add("is-loaded"); return; }
-    entered.then(() => {
-      gsap.fromTo(bg, { autoAlpha: 0, scale: 1.25 }, { autoAlpha: 1, scale: 1.08, duration: 2, ease: "power2.out" });
+  /* Banner slideshow: crossfade every 6 s with a slow Ken Burns drift.
+     Each image is loaded before it is shown. */
+  function heroSlides(bg, srcs) {
+    bg.style.backgroundImage = "none";
+    const make = (src) => {
+      const el = document.createElement("div");
+      el.className = "hero-slide";
+      el.style.backgroundImage = `url("${src}")`;
+      bg.appendChild(el);
+      return el;
+    };
+    const load = (src) => new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => resolve(img.naturalWidth === 120 ? src.replace("maxresdefault", "hqdefault") : src);
+      img.onerror = () => resolve(null);
+      img.src = src;
     });
+    const drift = (el) => {
+      const dir = Math.random() < 0.5 ? -1 : 1;
+      gsap.fromTo(el, { scale: 1.04, xPercent: -1.5 * dir }, { scale: 1.16, xPercent: 1.5 * dir, duration: 8, ease: "none" });
+    };
+
+    (async () => {
+      let index = 0;
+      let first = await load(srcs[0]);
+      while (!first && index < srcs.length - 1) first = await load(srcs[++index]);
+      ready();
+      if (!first) return;
+      let shown = make(first);
+      if (!on) { bg.classList.add("is-loaded"); return; }
+
+      await entered;
+      gsap.fromTo(bg, { autoAlpha: 0, scale: 1.15 }, { autoAlpha: 1, scale: 1, duration: 2, ease: "power2.out" });
+      drift(shown);
+      if (srcs.length < 2) return;
+
+      const next = async () => {
+        index = (index + 1) % srcs.length;
+        const src = await load(srcs[index]);
+        if (!src) { gsap.delayedCall(0.1, next); return; }
+        const slide = make(src);
+        gsap.set(slide, { autoAlpha: 0 });
+        drift(slide);
+        gsap.to(slide, {
+          autoAlpha: 1,
+          duration: 1.6,
+          ease: "power2.inOut",
+          onComplete: () => { gsap.killTweensOf(shown); shown.remove(); shown = slide; },
+        });
+        gsap.delayedCall(6, next);
+      };
+      gsap.delayedCall(6, next);
+    })();
+  }
+
+  /* Mosaic: move cards to their new spots, fade the filtered ones */
+  function arrange(moves, animate) {
+    moves.forEach(({ card, show, x, y }) => {
+      const wasHidden = card.dataset.hidden === "1";
+      if (!show) {
+        if (wasHidden) return;
+        card.dataset.hidden = "1";
+        if (on && animate) {
+          gsap.to(card, { autoAlpha: 0, scale: 0.94, duration: 0.3, ease: "power2.in", onComplete: () => { if (card.dataset.hidden === "1") card.style.display = "none"; } });
+        } else {
+          card.style.display = "none";
+        }
+        return;
+      }
+      card.dataset.hidden = "0";
+      card.style.display = "";
+      if (!on) { card.style.transform = `translate(${x}px, ${y}px)`; return; }
+      if (animate && wasHidden) {
+        gsap.set(card, { x, y });
+        gsap.fromTo(card, { autoAlpha: 0, scale: 0.94 }, { autoAlpha: 1, scale: 1, duration: 0.5, delay: 0.2, ease: "power3.out" });
+      } else if (animate) {
+        gsap.to(card, { x, y, autoAlpha: 1, scale: 1, duration: 0.65, ease: "power3.inOut" });
+      } else {
+        gsap.set(card, { x, y, autoAlpha: 1, scale: 1 });
+      }
+    });
+    refresh();
+  }
+
+  /* Underline that slides to the active tab */
+  function tabInk(tabs, btn, animate) {
+    const ink = tabs.querySelector(".tab-ink");
+    if (!ink || !btn) return;
+    const x = btn.offsetLeft;
+    const width = btn.offsetWidth;
+    if (!on) { ink.style.transform = `translateX(${x}px)`; ink.style.width = `${width}px`; return; }
+    if (animate) gsap.to(ink, { x, width, duration: 0.45, ease: "power3.inOut" });
+    else gsap.set(ink, { x, width });
+  }
+
+  /* ArtStation-style page: each image wipes in as it reaches the screen */
+  function artStack(stack) {
+    if (!stack || !on) return;
+    stack.querySelectorAll("figure").forEach((fig) => {
+      gsap.fromTo(fig,
+        { clipPath: "inset(10% 0% 10% 0%)", autoAlpha: 0.2 },
+        { clipPath: "inset(0% 0% 0% 0%)", autoAlpha: 1, duration: 1, ease: "power3.out", scrollTrigger: { trigger: fig, start: "top 90%", once: true } });
+    });
+    stack.querySelectorAll("img").forEach((img) => img.addEventListener("load", refresh, { once: true }));
   }
 
   /* ---------- Cards: 3D tilt with glare + title scramble ---------- */
@@ -424,6 +522,7 @@ const Motion = (() => {
       .fromTo("#credits > div", { autoAlpha: 0, x: 16 }, { autoAlpha: 1, x: 0, duration: 0.6, ease: "power3.out", stagger: 0.08 }, 0.45);
     tapes();
     hgallery(document.getElementById("gallery-section"));
+    artStack(document.getElementById("art-stack"));
   }
 
   /* ---------- About page ---------- */
@@ -510,5 +609,5 @@ const Motion = (() => {
   /* Safety net: never leave hidden content if something fails */
   if (on) setTimeout(() => root.classList.remove("js"), 9000);
 
-  return { on, lenis: () => lenis, entered, ready, magnets, timeline, go, scramble, reveal, tapes, refresh, hero, heroIntro, heroBg, cards, projectIntro, aboutIntro };
+  return { on, lenis: () => lenis, entered, ready, magnets, timeline, go, scramble, reveal, tapes, refresh, hero, heroIntro, heroSlides, arrange, tabInk, cards, projectIntro, aboutIntro };
 })();

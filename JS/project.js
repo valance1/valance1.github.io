@@ -106,12 +106,33 @@
       .join("");
   } else {
     credits.remove();
-    document.querySelector(".project-head").style.gridTemplateColumns = "1fr";
+    if (!p.isArt) document.querySelector(".project-head").style.gridTemplateColumns = "1fr";
+  }
+
+  /* ---------- Image projects: ArtStation-style page ----------
+     Images stacked large on the left, info panel fixed on the right */
+  if (p.isArt) {
+    document.getElementById("project").classList.add("is-art");
+    const head = document.querySelector(".project-head");
+    const stack = document.createElement("div");
+    stack.className = "art-stack";
+    stack.id = "art-stack";
+    stack.innerHTML = p.media
+      .map((m) => {
+        const body = embed(m);
+        if (!body) return "";
+        return `<figure>${body}${m.caption ? `<figcaption>${esc(m.caption)}</figcaption>` : ""}</figure>`;
+      })
+      .join("");
+    const aside = document.createElement("aside");
+    aside.className = "art-info";
+    aside.append(...head.children);
+    head.append(stack, aside);
   }
 
   /* ---------- Gallery ---------- */
 
-  const shots = rest
+  const shots = (p.isArt ? [] : rest)
     .map((m) => {
       const body = embed(m);
       if (!body) return "";
