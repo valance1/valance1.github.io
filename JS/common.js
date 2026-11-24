@@ -74,6 +74,7 @@ const Site = (() => {
     if (/sketchfab\.com/i.test(url)) return "sketchfab";
     if (/\.(mp4|webm)$/.test(clean)) return "video";
     if (/\.mview$/.test(clean)) return "marmoset";
+    if (/\.(glb|gltf)$/.test(clean)) return "model";
     if (/\.(jpe?g|png|gif|webp|avif)$/.test(clean) || /i\.ytimg\.com|img\.youtube\.com/.test(url)) return "image";
     return null;
   }

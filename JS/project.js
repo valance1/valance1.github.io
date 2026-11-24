@@ -46,6 +46,11 @@
       }
       case "marmoset":
         return frame(`<iframe src="${esc(url)}" title="${esc(p.title)} 3D viewer" allow="autoplay; fullscreen" allowfullscreen></iframe>`);
+      case "model":
+        return frame(
+          `<model-viewer src="${esc(url)}" alt="${esc(item.caption || p.title)} 3D model" camera-controls auto-rotate
+            disable-zoom interaction-prompt="auto" shadow-intensity="1" touch-action="pan-y"></model-viewer>`
+        );
       case "video":
         return frame(`<video src="${esc(url)}" controls autoplay muted loop playsinline></video>`);
       case "image":
@@ -62,8 +67,16 @@
     return "";
   }
 
+  /* 3D models use Google's <model-viewer>, loaded only on pages that have one */
+  if (p.media.some((m) => m.type === "model")) {
+    const mv = document.createElement("script");
+    mv.type = "module";
+    mv.src = "https://cdn.jsdelivr.net/npm/@google/model-viewer@4.4.0/dist/model-viewer.min.js";
+    document.head.appendChild(mv);
+  }
+
   /* The first video (or 3D viewer) goes in the big player at the top */
-  const playable = ["youtube", "video", "sketchfab", "marmoset"];
+  const playable = ["youtube", "video", "sketchfab", "marmoset", "model"];
   const leadIndex = p.media.findIndex((m) => playable.includes(m.type));
   const rest = p.media.filter((_, i) => i !== leadIndex);
 

@@ -5,5 +5,6 @@
 # Before/after:   before.png // after.png
 # Video file:     clip.mp4
 # Sketchfab:      https://sketchfab.com/3d-models/name-MODEL_ID
+# 3D model:       model.glb   (export from Blender as glTF Binary; keep it small, a few MB)
 # Home banner:    end an image line with *  (used as the big picture at the top of the home page)
 https://www.youtube.com/watch?v=VIDEO_ID

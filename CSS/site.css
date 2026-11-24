@@ -374,7 +374,8 @@ a { color: inherit; }
   background: #000;
 }
 .frame iframe,
-.frame video {
+.frame video,
+.frame model-viewer {
   position: absolute;
   inset: 0;
   width: 100%;
@@ -499,7 +500,7 @@ a { color: inherit; }
   margin-top: 10px;
   font-size: 15px;
   color: var(--muted);
-  max-width: 60ch;
+  text-align: center;
 }
 
 .hgallery-meta {
@@ -895,3 +896,11 @@ a { color: inherit; }
 
 /* Bigger hit area so the magnet has room to pull */
 .socials a { padding: 8px; margin: -8px; }
+
+/* 3D models (.glb in media.txt) */
+model-viewer {
+  display: block;
+  background: radial-gradient(ellipse at 50% 40%, var(--panel-2), var(--stage) 75%);
+  --poster-color: transparent;
+  --progress-bar-color: var(--spot);
+}
