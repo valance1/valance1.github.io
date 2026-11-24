@@ -17,7 +17,7 @@
     return;
   }
 
-  document.title = `${p.title} | Gabriel Pinotti`;
+  document.title = `${p.title} | valance`;
 
   /* ---------- Media builders ---------- */
 
