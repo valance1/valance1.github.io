@@ -41,12 +41,16 @@
   if (bannerSrc) {
     const bg = document.getElementById("hero-bg");
     const probe = new Image();
+    probe.onerror = () => Motion.ready();
     probe.onload = () => {
       let src = bannerSrc;
       if (probe.naturalWidth === 120) src = bannerSrc.replace("maxresdefault", "hqdefault");
       Motion.heroBg(bg, src);
+      Motion.ready();
     };
     probe.src = bannerSrc;
+  } else {
+    Motion.ready();
   }
 
   /* In production: Config/inproduction.txt, one per line, "Title | note" */

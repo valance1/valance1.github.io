@@ -249,11 +249,60 @@ const Site = (() => {
       .join("");
   }
 
+  const NAMES = {
+    "x.com": "X", "twitter.com": "X", "bsky.app": "Bluesky", "facebook.com": "Facebook",
+    "discord": "Discord", "dsc.gg": "Discord", "instagram.com": "Instagram", "youtube.com": "YouTube",
+    "linkedin.com": "LinkedIn", "artstation.com": "ArtStation", "github.com": "GitHub", "vimeo.com": "Vimeo",
+    "behance.net": "Behance", "sketchfab.com": "Sketchfab", "tiktok.com": "TikTok", "twitch.tv": "Twitch",
+    "patreon.com": "Patreon", "tumblr.com": "Tumblr", "threads.net": "Threads",
+  };
+
+  /* Contact block: an e-mail line in userinformation.txt becomes a
+     copy-to-clipboard button; links become buttons with their names. */
+  function contactActions(socials) {
+    const mail = socials.find((s) => s.includes("@") && !/^https?:/i.test(s));
+    const links = socials.filter((s) => /^https?:/i.test(s));
+    const mailBtn = mail
+      ? `<button class="contact-mail" type="button" data-email="${escapeHtml(mail)}"><span class="contact-mail-text">${escapeHtml(mail)}</span></button>`
+      : "";
+    const linkBtns = links
+      .map((l) => {
+        const key = Object.keys(ICONS).find((k) => l.includes(k));
+        let name = key ? NAMES[key] : l;
+        if (!key) { try { name = new URL(l).hostname.replace(/^www\./, ""); } catch (e) {} }
+        const icon = key ? ICONS[key] : "fa-solid fa-link";
+        return `<a class="contact-link" href="${escapeHtml(l)}" target="_blank" rel="noopener"><i class="${icon}" aria-hidden="true"></i><span>${escapeHtml(name)}</span></a>`;
+      })
+      .join("");
+    return mailBtn + linkBtns;
+  }
+
+  function wireMailButton(btn) {
+    const text = btn.querySelector(".contact-mail-text");
+    const mail = btn.dataset.email;
+    const say = (t) => (typeof Motion !== "undefined" ? Motion.scramble(text, t, 0.45) : (text.textContent = t));
+    btn.addEventListener("pointerenter", () => say(mail));
+    btn.addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(mail);
+        say("copied to clipboard");
+        setTimeout(() => say(mail), 1800);
+      } catch (e) {
+        location.href = `mailto:${mail}`;
+      }
+    });
+  }
+
   async function chrome() {
     const user = await userInfo();
     document.querySelectorAll("[data-socials]").forEach((el) => (el.innerHTML = socialLinks(user.socials)));
+    document.querySelectorAll("[data-contact]").forEach((el) => {
+      el.innerHTML = contactActions(user.socials);
+      el.querySelectorAll(".contact-mail").forEach(wireMailButton);
+    });
     document.querySelectorAll("[data-year]").forEach((el) => (el.textContent = new Date().getFullYear()));
     document.querySelectorAll("[data-name]").forEach((el) => (el.textContent = user.name || el.textContent));
+    if (typeof Motion !== "undefined") Motion.magnets();
     return user;
   }
 

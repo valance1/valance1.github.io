@@ -80,11 +80,69 @@ const Motion = (() => {
     try { sessionStorage.setItem("wipe-label", text); } catch (e) {}
   }
 
+  /* Pages call Motion.ready(images) once their content is on screen */
+  let markReady;
+  const pageReady = new Promise((r) => { markReady = r; });
+  function ready(images = []) {
+    const waits = [...images].filter(Boolean).map((img) =>
+      img.complete ? Promise.resolve() : new Promise((r) => { img.addEventListener("load", r, { once: true }); img.addEventListener("error", r, { once: true }); }));
+    Promise.all(waits).then(() => markReady());
+  }
+
+  function firstVisit() { try { return !sessionStorage.getItem("visited"); } catch (e) { return false; } }
+  function markVisited() { try { sessionStorage.setItem("visited", "1"); } catch (e) {} }
+
+  /* First visit of the session: a 0-100 counter that follows real loading
+     steps (fonts, page load, page content). Never waits more than ~4.5 s. */
+  function loadingCounter() {
+    const counter = document.createElement("div");
+    counter.className = "wipe-count";
+    counter.innerHTML = '<span class="wipe-num">000</span><span class="wipe-pct">%</span>';
+    wipe.appendChild(counter);
+    wipe.classList.add("is-counting");
+    if (wipeLabel) wipeLabel.textContent = ">loading_portfolio_";
+    const num = counter.querySelector(".wipe-num");
+
+    const steps = [
+      document.fonts ? document.fonts.ready : Promise.resolve(),
+      document.readyState === "complete" ? Promise.resolve() : new Promise((r) => window.addEventListener("load", r, { once: true })),
+      pageReady,
+    ];
+    let target = 6;
+    let doneSteps = 0;
+    steps.forEach((step) => step.then(() => { doneSteps++; target = Math.max(target, Math.round((doneSteps / steps.length) * 100)); }));
+
+    let allDone = false;
+    const minTime = new Promise((r) => setTimeout(r, 1400));
+    const timeout = new Promise((r) => setTimeout(r, 4500));
+    Promise.race([Promise.all([Promise.all(steps), minTime]), timeout]).then(() => { allDone = true; });
+
+    let shown = 0;
+    return new Promise((resolve) => {
+      const tick = () => {
+        const goal = allDone ? 100 : Math.min(target, 96);
+        shown = Math.min(goal, shown + Math.max((goal - shown) * 0.09, 0.3));
+        num.textContent = String(Math.floor(shown)).padStart(3, "0");
+        if (allDone && shown >= 100) {
+          gsap.ticker.remove(tick);
+          num.textContent = "100";
+          setTimeout(resolve, 200);
+        }
+      };
+      gsap.ticker.add(tick);
+    }).then(() => gsap.to(counter, { autoAlpha: 0, y: -20, duration: 0.3, ease: "power2.in" }).then());
+  }
+
   /* Resolves when the page is uncovered enough for intros to start */
-  const entered = new Promise((resolve) => {
+  const entered = new Promise(async (resolve) => {
     if (!on || !wipe) return resolve();
-    if (wipeLabel) wipeLabel.textContent = readLabel() || wipeLabel.textContent;
     gsap.set(wipe, { clipPath: "inset(0% 0% 0% 0%)", visibility: "visible" });
+    if (firstVisit()) {
+      markVisited();
+      await loadingCounter();
+    } else if (wipeLabel) {
+      wipeLabel.textContent = readLabel() || wipeLabel.textContent;
+    }
     gsap.timeline({ delay: 0.15 })
       .to(wipeLabel, { autoAlpha: 0, y: -12, duration: 0.3, ease: "power2.in" })
       .to(wipe, {
@@ -102,6 +160,7 @@ const Motion = (() => {
     const text = `>${label.trim() || "loading"}_`;
     saveLabel(text);
     if (wipeLabel) wipeLabel.textContent = text;
+    wipe.classList.remove("is-counting");
     gsap.timeline({ onComplete: () => { location.href = url; } })
       .set(wipe, { visibility: "visible", clipPath: "inset(100% 0% 0% 0%)" })
       .set(wipeLabel, { autoAlpha: 0, y: 12 })
@@ -371,21 +430,85 @@ const Motion = (() => {
 
   async function aboutIntro() {
     const name = document.querySelector(".about-intro [data-name]");
+    timeline();
     if (!on) return;
     await entered;
     gsap.timeline()
-      .fromTo(".avatar", { clipPath: "inset(100% 0% 0% 0%)" }, { clipPath: "inset(0% 0% 0% 0%)", duration: 1, ease: "power4.out" })
+      .fromTo(".avatar-wrap", { clipPath: "inset(100% 0% 0% 0%)", autoAlpha: 1 }, { clipPath: "inset(0% 0% 0% 0%)", duration: 1, ease: "power4.out" })
       .set(".about-intro h1", { autoAlpha: 1 }, 0.1)
       .call(() => scramble(name, name.textContent, 1), null, 0.1)
       .fromTo([".about-intro .hero-place", ".about-intro .summary"], { autoAlpha: 0, y: 18 }, { autoAlpha: 1, y: 0, duration: 0.7, stagger: 0.12, ease: "power3.out" }, 0.4);
     tapes();
     reveal(".chips .chip", { y: 12, stagger: 0.03 });
     reveal(".block-title", { y: 12 });
-    reveal(".job", { y: 30 });
   }
 
-  /* Safety net: never leave hidden content if something fails */
-  if (on) setTimeout(() => root.classList.remove("js"), 6000);
+  /* Experience timeline: the line draws with the scroll, nodes light up */
+  function timeline() {
+    const el = document.querySelector(".timeline");
+    if (!el) return;
+    const line = el.querySelector(".timeline-progress");
+    const jobs = [...el.querySelectorAll(".job")];
+    if (!on) {
+      el.classList.add("is-static");
+      jobs.forEach((j) => j.classList.add("is-lit"));
+      return;
+    }
+    gsap.fromTo(line, { scaleY: 0 }, {
+      scaleY: 1,
+      ease: "none",
+      scrollTrigger: { trigger: el, start: "top 70%", end: "bottom 55%", scrub: true },
+    });
+    jobs.forEach((job) => {
+      ScrollTrigger.create({
+        trigger: job,
+        start: "top 65%",
+        onEnter: () => job.classList.add("is-lit"),
+        onLeaveBack: () => job.classList.remove("is-lit"),
+      });
+    });
+    reveal(jobs, { y: 30 });
+  }
 
-  return { on, lenis: () => lenis, entered, go, scramble, reveal, tapes, refresh, hero, heroIntro, heroBg, cards, projectIntro, aboutIntro };
+  /* Contact block before the footer: title decodes when it scrolls in */
+  function contact() {
+    const block = document.querySelector(".contact");
+    if (!block || !on) return;
+    const word = block.querySelector(".contact-title .w");
+    gsap.set([".contact-title", ".contact-sub", ".contact-actions"], { autoAlpha: 0, y: 24 });
+    ScrollTrigger.create({
+      trigger: block,
+      start: "top 75%",
+      once: true,
+      onEnter: () => {
+        gsap.to([".contact-title", ".contact-sub", ".contact-actions"], { autoAlpha: 1, y: 0, duration: 0.8, stagger: 0.12, ease: "power3.out" });
+        scramble(word, word.textContent, 1.2);
+      },
+    });
+  }
+
+  /* Social icons and contact buttons drift toward the pointer */
+  function magnets() {
+    if (!on || !finePointer) return;
+    document.querySelectorAll(".socials a, .contact-link, .contact-mail").forEach((el) => {
+      if (el.dataset.magnet) return;
+      el.dataset.magnet = "1";
+      const pull = el.matches(".socials a") ? 0.55 : 0.3;
+      const x = gsap.quickTo(el, "x", { duration: 0.5, ease: "power3.out" });
+      const y = gsap.quickTo(el, "y", { duration: 0.5, ease: "power3.out" });
+      el.addEventListener("pointermove", (e) => {
+        const r = el.getBoundingClientRect();
+        x((e.clientX - (r.left + r.width / 2)) * pull);
+        y((e.clientY - (r.top + r.height / 2)) * pull);
+      });
+      el.addEventListener("pointerleave", () => { x(0); y(0); });
+    });
+  }
+
+  contact();
+
+  /* Safety net: never leave hidden content if something fails */
+  if (on) setTimeout(() => root.classList.remove("js"), 9000);
+
+  return { on, lenis: () => lenis, entered, ready, magnets, timeline, go, scramble, reveal, tapes, refresh, hero, heroIntro, heroBg, cards, projectIntro, aboutIntro };
 })();

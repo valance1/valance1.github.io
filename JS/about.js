@@ -5,7 +5,13 @@
   const user = await Site.chrome();
 
   const avatar = document.getElementById("avatar");
-  if (user.avatar) avatar.src = user.avatar; else avatar.remove();
+  const avatarWrap = document.getElementById("avatar-wrap");
+  if (user.avatar) {
+    avatar.src = user.avatar;
+    avatarWrap.style.setProperty("--src", `url("${user.avatar}")`);
+  } else {
+    avatarWrap.remove();
+  }
   if (user.place) document.getElementById("place").textContent = `Based in ${user.place}`;
 
   const [summary, software, skills, productions] = await Promise.all([
@@ -31,11 +37,12 @@
 
   if (jobs.length) {
     document.getElementById("exp-wrap").hidden = false;
-    document.getElementById("jobs").innerHTML = jobs
+    document.getElementById("jobs").innerHTML = `<span class="timeline-progress" aria-hidden="true"></span>` + jobs
       .map((j) => {
         const where = [j.company && j.company !== "None" ? j.company : "", j.dates].filter(Boolean).join(", ");
         return `
           <article class="job">
+            <span class="node" aria-hidden="true"></span>
             ${j.image ? `<img src="${esc(j.image)}" alt="" loading="lazy">` : "<span></span>"}
             <div>
               <h3>${esc(j.role)}</h3>
@@ -47,5 +54,6 @@
       .join("");
   }
 
+  Motion.ready([avatar]);
   Motion.aboutIntro();
 })();

@@ -12,6 +12,7 @@
     document.getElementById("title").innerHTML = `<span class="p">&gt;</span><span class="t">Project not found</span>`;
     document.getElementById("desc").innerHTML =
       `<p>There is no project called "${esc(slug)}". Check the folder name in Config/projects.txt, or <a href="index.html">go back to all work</a>.</p>`;
+    Motion.ready();
     Motion.projectIntro();
     return;
   }
@@ -118,6 +119,7 @@
     });
   });
 
+  Motion.ready();
   Motion.projectIntro();
 
   /* ---------- Previous / next ---------- */
