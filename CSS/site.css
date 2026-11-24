@@ -869,15 +869,15 @@ a { color: inherit; }
   align-items: center;
   gap: 14px;
 }
+/* The e-mail button shares the outline style of the other links */
 .contact-mail {
-  font-family: var(--mono);
-  font-size: clamp(17px, 2.4vw, 26px);
-  color: var(--spot-ink);
-  background: var(--spot);
-  border: 0;
-  padding: 14px 24px;
+  background: none;
+  color: var(--paper);
+  line-height: inherit;
   cursor: pointer;
 }
+.contact-mail-text { min-width: 0; }
+
 .contact-link {
   display: inline-flex;
   align-items: center;
@@ -888,7 +888,8 @@ a { color: inherit; }
   padding: 12px 20px;
   border: 1px solid var(--paper);
 }
-.contact-link:hover {
+.contact-link:hover,
+.contact-link:focus-visible {
   background: var(--spot);
   border-color: var(--spot);
   color: var(--spot-ink);

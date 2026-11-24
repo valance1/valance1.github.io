@@ -283,7 +283,7 @@ const Site = (() => {
     const mail = socials.find((s) => s.includes("@") && !/^https?:/i.test(s));
     const links = socials.filter((s) => /^https?:/i.test(s));
     const mailBtn = mail
-      ? `<button class="contact-mail" type="button" data-email="${escapeHtml(mail)}"><span class="contact-mail-text">${escapeHtml(mail)}</span></button>`
+      ? `<button class="contact-link contact-mail" type="button" data-email="${escapeHtml(mail)}" aria-label="Copy e-mail address ${escapeHtml(mail)}"><i class="fa-solid fa-envelope" aria-hidden="true"></i><span class="contact-mail-text">${escapeHtml(mail)}</span></button>`
       : "";
     const linkBtns = links
       .map((l) => {
